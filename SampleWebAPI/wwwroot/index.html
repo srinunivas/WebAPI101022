@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .container {
+        min-width: 350px;
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+        gap: 10px;
+      }
+
+      h3 {
+        text-align: center;
+      }
+
+      .form-element {
+        margin: 8px 0px;
+        display: flex;
+      }
+
+      .form-element > * {
+        flex: 1;
+      }
+      p {
+        font-size: 0.9rem;
+        opacity: 0.6;
+      }
+    </style>
+    <script>
+      const URL = "https://localhost:7097/paradox/";
+
+      function setLoading(loading) {
+        const submitBtn = document.querySelector("#submit-btn");
+        if (loading) {
+          submitBtn.setAttribute("disabled", true);
+          submitBtn.setAttribute("value", "Submitting...");
+        } else {
+          submitBtn.removeAttribute("disabled");
+          submitBtn.setAttribute("value", "Submit");
+        }
+      }
+
+      function postRequest(id, partnerType) {
+        // Prepare request
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+        var requestOptions = {
+          method: "GET",
+        };
+
+        var payload = {
+          id: id,
+          // TODO: below line can be uncommented if needed
+          // partner: partnerType,
+        };
+        var raw = JSON.stringify(payload);
+
+        // Send the request
+        setLoading(true);
+        console.log(
+          "%cSending request with payload:",
+          "background: navy; color: lightblue;",
+          { payload }
+        );
+        fetch(URL + id, requestOptions)
+          .then((response) => {
+            setLoading(false);
+            return response.text();
+          })
+          .then((result) => {
+            if (result.status > 300) {
+              console.log(
+                "%c Received response: ",
+                "background: darkred; color: white;",
+                { result }
+              );
+            } else {
+              console.log(
+                "%c Received response: ",
+                "background: darkgreen; color: lightgreen;",
+                { result }
+              );
+            }
+          })
+          .catch((error) => {
+            console.log(
+              "%c Failed to send request due to error: ",
+              "background: darkred; color: white;",
+              { error }
+            );
+            setLoading(false);
+          });
+      }
+
+      function handleSubmit() {
+        // Get employee ID
+        const inputField = document.querySelector("#id-field");
+        const empID = inputField.value;
+
+        // Get partner
+        const partnerTypeSelect = document.querySelector("#partner-type-field");
+        const partner = partnerTypeSelect.value;
+
+        // Submit request
+        if (empID.length > 0 && partner) {
+          postRequest(empID, partner);
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h3>Paycor ⟶ Partners</h3>
+      <div class="form-element">
+        <label for="employeeID">Enter Employee ID: </label>
+        <input
+          name="employeeID"
+          id="id-field"
+          type="text"
+          placeholder="Enter employee ID"
+        />
+      </div>
+      <div class="form-element">
+        <label for="partnerType">Select Partner: </label>
+        <select name="partnerType" id="partner-type-field">
+          <option value="when-i-work" selected>When I Work</option>
+          <option value="paradox">Paradox</option>
+        </select>
+      </div>
+      <input
+        id="submit-btn"
+        type="submit"
+        value="Submit"
+        onclick="handleSubmit()"
+      />
+      <hr />
+      <p>
+        Please open the Console in Dev Tools to view request/response details.
+      </p>
+    </div>
+  </body>
+</html>
